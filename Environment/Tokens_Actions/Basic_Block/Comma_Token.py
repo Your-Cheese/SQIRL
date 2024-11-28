@@ -1,9 +1,9 @@
-
 from Environment.Tokens_Actions.Basic_Block.Token import Token
 
 
 class Comma_Token(Token):
-    comma_types = [",",";"]
+    comma_types = [",", ";"]
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -11,7 +11,7 @@ class Comma_Token(Token):
         return ","
 
     def type(self):
-        return f"Comma Token"
+        return "Comma Token"
 
     def category(self):
         return Token.Category.BASIC_BLOCK
@@ -19,9 +19,9 @@ class Comma_Token(Token):
     def __str__(self) -> str:
         return ","
 
-    def is_comma(s:str):
+    def is_comma(s: str):
         return True if s in Comma_Token.comma_types else False
 
-    def parse(s:str):
-        assert(Comma_Token.is_comma(s))
+    def parse(s: str):
+        assert Comma_Token.is_comma(s)
         return Comma_Token()
