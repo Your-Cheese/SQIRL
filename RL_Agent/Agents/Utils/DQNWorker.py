@@ -1,12 +1,13 @@
-import struct
-import torch
-from RL_Agent.Agents.Utils.Neural_Network import WorkerNeuralNetwork
-
-from collections import deque
-import numpy as np
-import random
 import pickle
+import random
 import socket
+import struct
+from collections import deque
+
+import numpy as np
+import torch
+
+from RL_Agent.Agents.Utils.Neural_Network import WorkerNeuralNetwork
 
 # Get cpu or gpu device for training.
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -168,7 +169,7 @@ class DQNWorker:
         return loss
 
     def get_Q_value(self, state):
-        state = torch.tensor(state, dtype=torch.float32)
+        # state = torch.tensor(state, dtype=torch.float32)
         state = state.unsqueeze(0)
 
         current_Q = self.Q_value(state, model="online")
@@ -238,11 +239,13 @@ class DQNWorker:
         done(bool))
         """
 
-        state = torch.tensor(state, dtype=torch.float32)
-        next_state = torch.tensor([next_state])
+        # state = torch.tensor(state, dtype=torch.float32)
+        # next_state = torch.tensor([next_state])
         reward = torch.tensor([reward])
 
-        self.memory.append((state, next_state, reward))
+        self.memory.append(
+            (state.clone().detach(), next_state.clone().detach(), reward)
+        )
 
     def recall(self):
         """

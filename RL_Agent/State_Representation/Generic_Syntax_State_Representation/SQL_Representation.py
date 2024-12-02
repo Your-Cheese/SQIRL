@@ -1,3 +1,8 @@
+import os
+
+import torch
+
+from Environment.SQL.SQL import SQL
 from Environment.Tokens_Actions.Basic_Block.Comma_Token import Comma_Token
 from Environment.Tokens_Actions.Basic_Block.Comment_Token import Comment_Token
 from Environment.Tokens_Actions.Basic_Block.KeywordRepresentation_Token import (
@@ -6,15 +11,9 @@ from Environment.Tokens_Actions.Basic_Block.KeywordRepresentation_Token import (
 from Environment.Tokens_Actions.Basic_Block.Paranthesis_Token import Paranthesis_Token
 from Environment.Tokens_Actions.Basic_Block.Quote_Token import Quote_Token
 from Environment.Tokens_Actions.Basic_Block.Whitespace_Token import Whitespace_Token
-from RL_Agent.State_Representation.Generic_Syntax_State_Representation.model.SQL_Encoder import (
-    SQL_Encoder,
+from transformer_models.Encoder import (
+    Encoder,
 )
-from RL_Agent.State_Representation.Generic_Syntax_State_Representation.model.SQL_Decoder import (
-    SQL_Decoder,
-)
-from Environment.SQL.SQL import SQL
-import os
-import torch
 
 
 class SQL_Representation:
@@ -69,34 +68,42 @@ class SQL_Representation:
         max_length,
         acc_threshold=0.80,
     ) -> None:
-        self.encoder = SQL_Encoder(input_size, hidden_size, max_length)
-        self.decoder = SQL_Decoder(hidden_size, output_size, max_length)
+        self.encoder = Encoder(input_size, hidden_size, max_length)
+        self.encoder.load_state_dict(
+            torch.load(
+                os.path.join(
+                    "transformer_models",
+                    "SQL_encoder.pt",
+                ),
+                weights_only=True,
+            )
+        )
+        # self.decoder = Decoder(hidden_size, output_size, max_length)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+        self.encoder.to(self.device)
         # load trained models
-        self.encoder = torch.load(
-            os.path.join(
-                "RL_Agent",
-                "State_Representation",
-                "Generic_Syntax_State_Representation",
-                "model",
-                "encoder.model",
-            ),
-            map_location=self.device,
-        )
-        self.decoder = torch.load(
-            os.path.join(
-                "RL_Agent",
-                "State_Representation",
-                "Generic_Syntax_State_Representation",
-                "model",
-                "decoder.model",
-            ),
-            map_location=self.device,
-        )
+        # self.encoder = torch.load(
+        #     os.path.join(
+        #         # "RL_Agent",
+        #         # "State_Representation",
+        #         # "Generic_Syntax_State_Representation",
+        #         # "model",
+        #         # "encoder.model",
+        #     ),
+        #     map_location=self.device,
+        # )
+        # self.decoder = torch.load(
+        #     os.path.join(
+        #         "RL_Agent",
+        #         "State_Representation",
+        #         "Generic_Syntax_State_Representation",
+        #         "model",
+        #         "decoder.model",
+        #     ),
+        #     map_location=self.device,
+        # )
 
         self.acc_threshold = acc_threshold
-        pass
 
     def embedding(sql: SQL):
         result = []
@@ -123,7 +130,6 @@ class SQL_Representation:
         input_length = tensored_input.size(0)
 
         # encode
-        output, hidden = self.encoder.encode(tensored_input, input_length)
-
-        features = list(hidden.view(-1).detach().cpu().numpy())
+        output = self.encoder.encode(tensored_input, input_length)
+        features = torch.sum(output, dim=0)
         return features

@@ -1,8 +1,9 @@
-import torch
-from RL_Agent.Agents.Utils.Neural_Network import RDN_neural_network
-
-from collections import deque
 import random
+from collections import deque
+
+import torch
+
+from RL_Agent.Agents.Utils.Neural_Network import RDN_neural_network
 
 # Get cpu or gpu device for training.
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -51,7 +52,7 @@ class RDN:
         return loss
 
     def get_value(self, state):
-        state = torch.tensor(state, dtype=torch.float32)
+        # state = torch.tensor(state, dtype=torch.float32)
         state = state.unsqueeze(0)
 
         current_Q = self.Q_value(state, model="online")
@@ -85,9 +86,9 @@ class RDN:
         state (LazyFrame),
         """
 
-        state = torch.tensor(state, dtype=torch.float32)
+        # state = torch.tensor(state, dtype=torch.float32)
 
-        self.memory.append((state))
+        self.memory.append(state.clone().detach())
 
     def recall(self):
         """

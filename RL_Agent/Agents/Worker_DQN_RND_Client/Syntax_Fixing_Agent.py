@@ -1,8 +1,9 @@
-import copy
 import math
 import random
 
 import numpy as np
+import torch
+
 from Environment.Environment import Game_Type
 from RL_Agent.Agents.Utils.DQNWorker import DQNWorker
 from RL_Agent.Agents.Utils.RDN import RDN
@@ -97,11 +98,14 @@ class Syntax_Fixing_Agent:
 
         for error, current_action, current_range, current_type in actions:
             # generate representation
-            current_state = copy.deepcopy(representation_vector)
-            current_state.append(int(error))
-            current_state.append(current_action)
-            current_state.extend(current_range)
-            current_state.append(current_type)
+            current_state = torch.cat(
+                [
+                    representation_vector,
+                    torch.tensor([error, current_action]),
+                    torch.tensor(current_range),
+                    torch.tensor([current_type]),
+                ]
+            )
             current_q_value = self.action_Q_value.get_Q_value(current_state)[0][0]
             if best_action_value == None or current_q_value > best_action_value:
                 best_action = (current_action, current_range, current_type)
@@ -128,11 +132,14 @@ class Syntax_Fixing_Agent:
 
             # ---------action Q network---------
             # get last state q-value
-            last_q_value = copy.deepcopy(last_state_representation)
-            last_q_value.append(error)
-            last_q_value.append(last_action["action"])
-            last_q_value.extend(last_action["range"])
-            last_q_value.append(last_action["type"])
+            last_q_value = torch.cat(
+                [
+                    last_state_representation,
+                    torch.tensor([error, last_action["action"]]),
+                    torch.tensor(last_action["range"]),
+                    torch.tensor([last_action["type"]]),
+                ]
+            )
 
             # get current state q-value
             if current_state["game"] == Game_Type.DONE:
@@ -174,12 +181,13 @@ class Syntax_Fixing_Agent:
         else:
             return None
 
-    def stable_sigmoid(x):
-        if x >= 0:
-            z = math.exp(-x)
-            sig = 1 / (1 + z)
-            return sig
-        else:
-            z = math.exp(x)
-            sig = z / (1 + z)
-            return sig
+
+def stable_sigmoid(x):
+    if x >= 0:
+        z = math.exp(-x)
+        sig = 1 / (1 + z)
+        return sig
+    else:
+        z = math.exp(x)
+        sig = z / (1 + z)
+        return sig

@@ -1,16 +1,12 @@
 import os
-from RL_Agent.State_Representation.Payload_Representation.Payload_Generic_Parser import (
-    Payload_Generic_Parser,
-)
-from RL_Agent.State_Representation.Payload_Representation.Payload_Representation import (
-    Payload_Representation,
-)
+import pickle
 
 from RL_Agent.State_Representation.Payload_Representation.model.dataset.Payload_Generator import (
     Payload_Generator,
 )
-
-import pickle
+from RL_Agent.State_Representation.Payload_Representation.Payload_Generic_Parser import (
+    Payload_Generic_Parser,
+)
 
 
 class Dataset_Generator:
@@ -33,7 +29,10 @@ class Dataset_Generator:
             full_payload_file_path.write(str(current_payload) + "\n")
             generic_payload = self.generic_parser.convert_generic(current_payload)
             generic_payloads.append(generic_payload)
-            print(generic_payload)
-            print(Payload_Representation.payload_embedding(generic_payload))
+            # print(generic_payload)
+            # print(Payload_Representation.payload_embedding(generic_payload))
         with open(generic_payload_path, "wb") as f:
             pickle.dump(generic_payloads, f)
+
+
+Dataset_Generator("").generate_dataset(100000)

@@ -1,4 +1,5 @@
 import pprint
+import time
 
 from Environment.Environment import Game_Type
 from RL_Agent.Agents.DQN_RND_Agent.Syntax_Fixing_Agent import Syntax_Fixing_Agent
@@ -58,13 +59,13 @@ class Agent_6:
         current_game = current_state["game"]
 
         #  current payload
-        current_payload = current_state["payload"]
+        # current_payload = current_state["payload"]
 
         #  current sql statement
-        current_sql = current_state["sql"]
+        # current_sql = current_state["sql"]
 
         #  available actions
-        available_actions = current_state["actions"]
+        # available_actions = current_state["actions"]
 
         # generate representation
         representable_state = self.state_representation.represent_state(
@@ -118,8 +119,6 @@ class Agent_6:
                 representable_state,
                 self.global_timestamp,
             )
-        else:
-            {}
 
         # tune all networks
 

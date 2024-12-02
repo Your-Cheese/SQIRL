@@ -1,16 +1,12 @@
+import os
+
+import torch
+
 from Environment.Payload.Payload import Payload
-from RL_Agent.State_Representation.Payload_Representation.model.Payload_Decoder import (
-    Payload_Decoder,
-)
-from RL_Agent.State_Representation.Payload_Representation.model.Payload_Encoder import (
-    Payload_Encoder,
-)
 from RL_Agent.State_Representation.Payload_Representation.Payload_Generic_Parser import (
     Payload_Generic_Parser,
 )
-
-import os
-import torch
+from transformer_models.Encoder import Encoder
 
 
 class Payload_Representation:
@@ -55,35 +51,44 @@ class Payload_Representation:
     def __init__(
         self, input_size, output_size, hidden_size, max_length, acc_threshold=0.80
     ) -> None:
-        self.encoder = Payload_Encoder(input_size, hidden_size, max_length)
-        self.decoder = Payload_Decoder(hidden_size, output_size, max_length)
+        self.encoder = Encoder(input_size, hidden_size, max_length)
+        # self.decoder = Payload_Decoder(hidden_size, output_size, max_length)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+        self.encoder.load_state_dict(
+            torch.load(
+                os.path.join(
+                    "transformer_models",
+                    "payload_encoder.pt",
+                ),
+                weights_only=True,
+            )
+        )
+        self.encoder.to(self.device)
         # load trained weights
-        self.encoder = torch.load(
-            os.path.join(
-                "RL_Agent",
-                "State_Representation",
-                "Payload_Representation",
-                "model",
-                "encoder.model",
-            ),
-            map_location=self.device,
-        )
-        self.decoder = torch.load(
-            os.path.join(
-                "RL_Agent",
-                "State_Representation",
-                "Payload_Representation",
-                "model",
-                "decoder.model",
-            ),
-            map_location=self.device,
-        )
+        # self.encoder = torch.load(
+        #     os.path.join(
+        #         # "RL_Agent",
+        #         # "State_Representation",
+        #         # "Payload_Representation",
+        #         # "model",
+        #         # "encoder.model",
+        #     ),
+        #     map_location=self.device,
+        # )
+        # self.decoder = torch.load(
+        #     os.path.join(
+        #         "RL_Agent",
+        #         "State_Representation",
+        #         "Payload_Representation",
+        #         "model",
+        #         "decoder.model",
+        #     ),
+        #     map_location=self.device,
+        # )
 
         self.generic_parser = Payload_Generic_Parser()
         self.acc_threshold = acc_threshold
-        pass
 
     def payload_embedding(payload: Payload):
         # convert generic to embedding
@@ -111,6 +116,6 @@ class Payload_Representation:
         input_length = tensored_input.size(0)
 
         # encode
-        output, hidden = self.encoder.encode(tensored_input, input_length)
+        output = self.encoder.encode(tensored_input, input_length)
 
-        return list(hidden.view(-1).detach().cpu().numpy())
+        return torch.sum(output, dim=0)

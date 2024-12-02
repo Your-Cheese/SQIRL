@@ -1,3 +1,4 @@
+import torch
 
 from RL_Agent.State_Representation.Generic_Syntax_State_Representation.SQL_Representation import (
     SQL_Representation,
@@ -45,9 +46,7 @@ class State_Representation:
         sql_vector = self.sql_representation.generate_representation(sql, token)
 
         # concatenate representation
-        payload_vector.extend(sql_vector)
-
-        return payload_vector
+        return torch.cat([payload_vector, sql_vector], dim=1).view(-1).cpu().detach()
 
     def size():
         return State_Representation.hidden_size * 2

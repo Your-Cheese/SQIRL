@@ -130,7 +130,7 @@ def sqirl_cli(
     else:
         if model_dir is None:
             model_dir = os.path.join("/RL_Agent", "pretrained_agents", "DQN_Agent")
-            model_dir = os.path.abspath(s.getcwd() + model_dir)
+            model_dir = os.path.abspath(os.getcwd() + model_dir)
         model_checkpoint_file = os.path.join(
             os.getcwd(), log_location, "DQN_Agent_Checkpoint"
         )
